@@ -6,32 +6,30 @@
     <title>{% block title %}BME Department Voting System | Federal University of Technology, Owerri{% endblock %}</title>
     <meta name="description" content="Official Biomedical Engineering Department Voting System - Federal University of Technology Owerri (FUTO). Secure digital voting platform for BME students, elections, and departmental governance.">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#1e40af">
+    <meta name="theme-color" content="#8B1538">
     <link rel="canonical" href="https://nabes-bme-election.onrender.com{{ request.get_full_path }}">
 
-    <link rel="icon" type="image/png" href="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRr0OVIl6P8fVot-jbR5zA8-i1_BS1LqqXFkA&s">
-
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/jpeg" href="https://res.cloudinary.com/dasmnlwnm/image/upload/v1760695706/logo_yjajyk.jpg">
+    <link rel="apple-touch-icon" href="https://res.cloudinary.com/dasmnlwnm/image/upload/v1760695706/logo_yjajyk.jpg">
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
 
     <style>
         :root {
-            --brand: #1e40af;
-            --brand-dark: #172554;
-            --brand-light: #3b82f6;
-            --gold: #f59e0b;
-            --success: #059669;
-            --danger: #dc2626;
+            --brand: #8B1538;
+            --brand-dark: #5A0D23;
+            --brand-light: #6B0F28;
+            --accent-purple: #6B3FA0;
+            --gold: #D4AF37;
+            --success: #198754;
+            --danger: #dc3545;
             --ink: #0f172a;
             --ink-soft: #475569;
-            --bg-soft: #f8fafc;
+            --bg-soft: #F5F5F5;
             --line: #e2e8f0;
             --radius: 14px;
-            --shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
-            --shadow-lg: 0 20px 48px rgba(15, 23, 42, 0.14);
+            --shadow: 0 8px 24px rgba(139, 21, 56, 0.08);
+            --shadow-lg: 0 20px 48px rgba(139, 21, 56, 0.14);
         }
 
         * { box-sizing: border-box; }
@@ -40,7 +38,7 @@
 
         body {
             margin: 0;
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             color: var(--ink);
             background: var(--bg-soft);
             line-height: 1.6;
@@ -49,7 +47,7 @@
             flex-direction: column;
         }
 
-        h1, h2, h3, h4 { font-family: 'Poppins', sans-serif; font-weight: 700; line-height: 1.25; margin: 0; }
+        h1, h2, h3, h4 { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-weight: 700; line-height: 1.25; margin: 0; }
 
         a { color: var(--brand); }
 
@@ -64,11 +62,11 @@
             z-index: 50;
         }
         .site-nav .container { display: flex; align-items: center; justify-content: space-between; padding-top: .75rem; padding-bottom: .75rem; gap: 1rem; }
-        .brand { display: flex; align-items: center; gap: .6rem; text-decoration: none; font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 1.15rem; color: var(--ink); }
-        .brand img { width: 36px; height: 36px; border-radius: 8px; object-fit: cover; }
+        .brand { display: flex; align-items: center; gap: .6rem; text-decoration: none; font-weight: 700; font-size: 1.15rem; color: var(--ink); }
+        .brand img { width: 36px; height: 36px; border-radius: 20%; object-fit: cover; }
         .nav-links { display: flex; align-items: center; gap: .25rem; list-style: none; margin: 0; padding: 0; }
         .nav-links a { text-decoration: none; color: var(--ink-soft); font-weight: 500; padding: .5rem .75rem; border-radius: 8px; font-size: .95rem; }
-        .nav-links a:hover { background: var(--bg-soft); color: var(--brand); }
+        .nav-links a:hover { background: var(--bg-soft); color: var(--gold); }
         .nav-toggle { display: none; background: none; border: none; font-size: 1.5rem; color: var(--ink); cursor: pointer; }
 
         @media (max-width: 760px) {
@@ -79,7 +77,7 @@
         }
 
         /* Page header */
-        .page-header { background: linear-gradient(135deg, var(--brand) 0%, var(--brand-dark) 100%); padding: 2.75rem 0; text-align: center; }
+        .page-header { background: linear-gradient(135deg, var(--brand) 0%, var(--accent-purple) 100%); padding: 2.75rem 0; text-align: center; }
         .page-header h1 { color: #fff; font-size: 2rem; }
         @media (min-width: 640px) { .page-header h1 { font-size: 2.5rem; } }
         .page-header .badge-loc { display: inline-flex; align-items: center; gap: .4rem; margin-top: .9rem; background: rgba(255,255,255,.15); color: #fff; padding: .4rem 1rem; border-radius: 999px; font-size: .85rem; }
@@ -91,10 +89,10 @@
 
         .btn { display: inline-flex; align-items: center; justify-content: center; gap: .5rem; min-height: 52px; padding: .85rem 1.75rem; border-radius: 12px; font-weight: 600; font-size: 1.05rem; border: none; cursor: pointer; text-decoration: none; transition: transform .15s ease, box-shadow .15s ease, background .15s ease; width: 100%; }
         .btn:active { transform: scale(.98); }
-        .btn-primary { background: var(--brand); color: #fff; box-shadow: 0 8px 20px rgba(30,64,175,.28); }
-        .btn-primary:hover { background: var(--brand-dark); color: #fff; }
-        .btn-gold { background: var(--gold); color: #1a1a1a; box-shadow: 0 8px 20px rgba(245,158,11,.3); }
-        .btn-gold:hover { background: #d97706; color: #1a1a1a; }
+        .btn-primary { background: var(--brand); color: #fff; box-shadow: 0 8px 20px rgba(139,21,56,.28); }
+        .btn-primary:hover { background: var(--brand-light); color: #fff; }
+        .btn-gold { background: var(--gold); color: #1a1a1a; box-shadow: 0 8px 20px rgba(212,175,55,.3); }
+        .btn-gold:hover { background: #B8941F; color: #1a1a1a; }
         .btn-outline { background: #fff; color: var(--brand); border: 2px solid var(--line); }
         .btn-outline:hover { border-color: var(--brand); color: var(--brand); }
         .btn-danger { background: var(--danger); color: #fff; }
@@ -104,7 +102,7 @@
 
         .form-label { display: block; font-weight: 600; margin-bottom: .4rem; font-size: .95rem; color: var(--ink); }
         .form-control { width: 100%; padding: .9rem 1rem; border: 2px solid var(--line); border-radius: 12px; font-size: 1.05rem; font-family: inherit; background: #fff; transition: border-color .15s ease, box-shadow .15s ease; }
-        .form-control:focus { outline: none; border-color: var(--brand-light); box-shadow: 0 0 0 4px rgba(59,130,246,.12); }
+        .form-control:focus { outline: none; border-color: var(--brand); box-shadow: 0 0 0 4px rgba(139,21,56,.12); }
         .form-group { margin-bottom: 1.25rem; }
         .field-error { color: var(--danger); font-size: .9rem; margin-top: .4rem; font-weight: 500; }
 
@@ -112,13 +110,13 @@
         .alert i { margin-top: .15rem; }
         .alert-error { background: #fef2f2; border: 1px solid #fecaca; color: var(--danger); }
         .alert-success { background: #ecfdf5; border: 1px solid #a7f3d0; color: var(--success); }
-        .alert-info { background: #eff6ff; border: 1px solid #bfdbfe; color: var(--brand); }
+        .alert-info { background: #eff6ff; border: 1px solid #bfdbfe; color: #1d4ed8; }
         .alert-warning { background: #fffbeb; border: 1px solid #fde68a; color: #b45309; }
 
         .center-shell { min-height: calc(100vh - 260px); display: flex; align-items: center; justify-content: center; padding: 2rem 1rem; }
 
         /* Footer */
-        .site-footer { background: var(--brand-dark); color: #cbd5e1; margin-top: auto; padding: 2.5rem 0 1.5rem; }
+        .site-footer { background: linear-gradient(135deg, var(--brand) 0%, var(--brand-dark) 100%); color: #cbd5e1; margin-top: auto; padding: 2.5rem 0 1.5rem; }
         .site-footer h4 { color: #fff; font-size: 1rem; margin-bottom: .75rem; }
         .site-footer a { color: #cbd5e1; text-decoration: none; }
         .site-footer a:hover { color: #fff; }
@@ -136,7 +134,7 @@
     <nav class="site-nav">
         <div class="container">
             <a href="https://futobme.vercel.app/" target="_blank" rel="noopener" class="brand">
-                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRr0OVIl6P8fVot-jbR5zA8-i1_BS1LqqXFkA&s" alt="BME FUTO Logo">
+                <img src="https://res.cloudinary.com/dasmnlwnm/image/upload/v1760695706/logo_yjajyk.jpg" alt="BME FUTO Logo">
                 <span>BME FUTO Voting</span>
             </a>
             <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation">
@@ -144,8 +142,9 @@
             </button>
             <ul class="nav-links" id="navLinks">
                 <li><a href="https://futobme.vercel.app/" target="_blank" rel="noopener"><i class="bi bi-house me-1"></i>BME Home</a></li>
-                <li><a href="https://futobme.vercel.app/about.html" target="_blank" rel="noopener"><i class="bi bi-info-circle me-1"></i>About</a></li>
-                <li><a href="https://futobme.vercel.app/courses.html" target="_blank" rel="noopener"><i class="bi bi-journal-text me-1"></i>Past Questions</a></li>
+                <li><a href="https://futobme.vercel.app/excos/" target="_blank" rel="noopener"><i class="bi bi-person-badge me-1"></i>Excos</a></li>
+                <li><a href="https://futobme.vercel.app/student/login/" target="_blank" rel="noopener"><i class="bi bi-journal-text me-1"></i>Past Questions</a></li>
+                <li><a href="https://futobme.vercel.app/timetables/" target="_blank" rel="noopener"><i class="bi bi-calendar-week me-1"></i>Timetables</a></li>
                 <li><a href="https://wa.me/2348138582078" target="_blank" rel="noopener"><i class="bi bi-whatsapp me-1"></i>Help</a></li>
             </ul>
         </div>
@@ -178,8 +177,8 @@
                 <div>
                     <h4><i class="bi bi-link-45deg me-2"></i>Quick Links</h4>
                     <p style="margin: 0 0 .5rem;"><a href="https://futobme.vercel.app/" target="_blank" rel="noopener">BME Home</a></p>
-                    <p style="margin: 0 0 .5rem;"><a href="https://futobme.vercel.app/about.html" target="_blank" rel="noopener">About Us</a></p>
-                    <p style="margin: 0;"><a href="https://futobme.vercel.app/courses.html" target="_blank" rel="noopener">Past Questions</a></p>
+                    <p style="margin: 0 0 .5rem;"><a href="https://futobme.vercel.app/excos/" target="_blank" rel="noopener">Excos</a></p>
+                    <p style="margin: 0;"><a href="https://futobme.vercel.app/student/login/" target="_blank" rel="noopener">Past Questions</a></p>
                 </div>
             </div>
             <div class="copyright">
