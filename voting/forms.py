@@ -48,8 +48,15 @@ class AccessCodeForm(forms.Form):
 
 
 class ResetAllForm(forms.Form):
-    access_code = forms.CharField(widget=forms.PasswordInput, label="Access Code")
-    confirm_reset = forms.BooleanField(label="Confirm Reset", required=True)
+    access_code = forms.CharField(
+        widget=forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': 'Enter access code'}),
+        label="Access Code"
+    )
+    confirm_reset = forms.BooleanField(
+        widget=forms.CheckboxInput(attrs={'style': 'width: 18px; height: 18px;'}),
+        label="Confirm Reset",
+        required=True
+    )
 
 class VoteForm(forms.Form):
     position = forms.ModelChoiceField(queryset=Position.objects.all(), required=True)
@@ -76,10 +83,46 @@ class VoteForm(forms.Form):
     
 
     
-class StudentForm(forms.ModelForm):
-    class Meta:
-        model = Student
-        fields = ['reg_number', 'full_name', 'password']
-        widgets = {
-            'password': forms.PasswordInput(),
-        }
+class RegisterForm(forms.Form):
+    reg_number = forms.CharField(
+        max_length=100,
+        label='Registration Number',
+        widget=forms.TextInput(attrs={'placeholder': 'Enter your registration number', 'autocomplete': 'username'})
+    )
+    password1 = forms.CharField(
+        label='Password',
+        widget=forms.PasswordInput(attrs={'placeholder': 'Choose a password', 'autocomplete': 'new-password'})
+    )
+    password2 = forms.CharField(
+        label='Confirm Password',
+        widget=forms.PasswordInput(attrs={'placeholder': 'Confirm your password', 'autocomplete': 'new-password'})
+    )
+
+    student = None
+
+    def clean_reg_number(self):
+        reg_number = self.cleaned_data.get('reg_number', '').strip()
+        student = Student.objects.filter(reg_number=reg_number).first()
+        if not student:
+            raise ValidationError(
+                "This registration number isn't on our approved voters list. "
+                "Contact the department if you believe this is a mistake."
+            )
+        if student.has_usable_password():
+            raise ValidationError(
+                "This registration number is already registered. Please log in, "
+                "or use 'Reset it here' if you forgot your password."
+            )
+        self.student = student
+        return reg_number
+
+    def clean(self):
+        cleaned_data = super().clean()
+        password1 = cleaned_data.get('password1')
+        password2 = cleaned_data.get('password2')
+
+        if password1 and password2 and password1 != password2:
+            raise ValidationError("Passwords do not match.")
+        if password1 and len(password1) < 4:
+            raise ValidationError("Password must be at least 4 characters long.")
+        return cleaned_data

@@ -1,18 +1,19 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.db.models import Count
+from django.db import IntegrityError
 from django.contrib import messages
-from django.contrib.auth import login as auth_login, logout, authenticate
+from django.contrib.auth import login as auth_login, logout as auth_logout, authenticate
 from django.urls import reverse_lazy
 from django.contrib.auth.views import LoginView
 from django.views.generic import TemplateView
 from django.contrib.admin.views.decorators import staff_member_required
 from django.http import HttpResponseRedirect
 from django.contrib.auth.decorators import login_required
-from functools import wraps
+from decouple import config
 from django.http import HttpResponseBadRequest
 
 from .models import Position, Contestant, Vote, Student
-from .forms import VoteForm, StudentForm
+from .forms import RegisterForm
 from django.contrib.auth.forms import AuthenticationForm  # Import AuthenticationForm
 from .forms import  AccessCodeForm
 from .models import Vote, Student
@@ -33,12 +34,10 @@ from .models import Student
 def reset_password(request):
     if request.method == 'POST':
         form = PasswordResetForm(request.POST)
-        print("Form data:", request.POST)  # Debugging line to see form data
 
         if form.is_valid():
             reg_number = form.cleaned_data.get('reg_number')
             new_password = form.cleaned_data.get('new_password1')
-            print("Reg Number:", reg_number)  # Debugging line
 
             try:
                 student = Student.objects.get(reg_number=reg_number)
@@ -50,7 +49,6 @@ def reset_password(request):
             except Student.DoesNotExist:
                 messages.error(request, 'User with this registration number does not exist.')
         else:
-            print("Form errors:", form.errors)  # Debugging line to see errors
             messages.error(request, 'Please correct the errors below.')
     else:
         form = PasswordResetForm()
@@ -131,7 +129,7 @@ def enter_access_code(request):
         form = AccessCodeForm(request.POST)
         if form.is_valid():
             access_code = form.cleaned_data.get('access_code')
-            if access_code == 'BMEFUTO':  # Replace with your actual access code logic
+            if access_code == ACCESS_CODE:
                 request.session['has_access'] = True  # Set session variable
                 return redirect('list_students')  # Redirect to the list_students view
             else:
@@ -178,7 +176,7 @@ def list_students(request):
 
 
 
-def logout(request):
+def clear_admin_access(request):
     request.session.pop('has_access', None)  # Clear the session variable
     return redirect('enter_access_code')  # Redirect to the access code page
 
@@ -218,7 +216,7 @@ def reset_all(request):
 
 
 
-ACCESS_CODE = 'BMEFUTO'  # Set your access code {this is for live count and vote reseting}
+ACCESS_CODE = config('ELECTION_ACCESS_CODE', default='BMEFUTO')  # Set your access code {this is for live count and vote reseting}
 
 def live_vote_count(request):
     if request.method == 'POST':
@@ -248,38 +246,23 @@ def live_vote_count(request):
 
 
 
-def custom_auth_required(view_func):
-    @wraps(view_func)
-    def _wrapped_view(request, *args, **kwargs):
-        reg_number = request.POST.get('reg_number', '') or request.GET.get('reg_number', '')
-        password = request.POST.get('password', '') or request.GET.get('password', '')
-
-        if reg_number and password:
-            student = authenticate(reg_number=reg_number, password=password)
-            if student:
-                return view_func(request, *args, **kwargs)
-
-        messages.error(request, 'Unauthorized access.')
-        return redirect('login')
-
-    return _wrapped_view
-
-
-
 
 
 
 def register_student(request):
     if request.method == 'POST':
-        form = StudentForm(request.POST)
+        form = RegisterForm(request.POST)
         if form.is_valid():
-            student = form.save(commit=False)
-            student.set_password(form.cleaned_data['password'])
+            student = form.student
+            student.set_password(form.cleaned_data['password1'])
             student.save()
-            messages.success(request, 'Student registered successfully!')
-            return redirect('register_student')
+            messages.success(
+                request,
+                f"Welcome, {student.full_name}! Your account is ready — you can now log in and vote."
+            )
+            return redirect('login')
     else:
-        form = StudentForm()
+        form = RegisterForm()
     return render(request, 'voting/register_student.html', {'form': form})
 
 
@@ -344,18 +327,31 @@ def vote_position(request, position_id):
     student = get_object_or_404(Student, reg_number=reg_number)
     position = get_object_or_404(Position, id=position_id)
 
+    # Already voted for this position (fresh page load, e.g. a stale/back-navigated
+    # ballot, or a resumed session) — just move on instead of showing a stale form.
+    if request.method == 'GET' and Vote.objects.filter(student=student, position=position).exists():
+        return redirect('next_position', position_id=position_id)
+
     if request.method == 'POST':
+        # A network drop can make the browser retry an already-successful vote.
+        # Treat "already voted for this position" as success and move forward
+        # instead of dead-ending on an error page.
+        if Vote.objects.filter(student=student, position=position).exists():
+            return redirect('next_position', position_id=position_id)
+
         contestant_id = request.POST.get('contestant')
 
         if not contestant_id:
             return HttpResponseBadRequest("You must select a contestant.")
 
-        contestant = get_object_or_404(Contestant, id=contestant_id)
+        contestant = get_object_or_404(Contestant, id=contestant_id, position=position)
 
-        if Vote.objects.filter(student=student, position=position).exists():
-            return render(request, 'voting/error.html', {'message': 'You have already voted for this position.'})
-
-        Vote.objects.create(student=student, position=position, contestant=contestant)
+        try:
+            Vote.objects.create(student=student, position=position, contestant=contestant)
+        except IntegrityError:
+            # Two near-simultaneous submits both passed the check above —
+            # the vote is recorded either way, so just continue.
+            pass
         return redirect('next_position', position_id=position_id)
 
     contestants = Contestant.objects.filter(position=position)
@@ -389,33 +385,6 @@ def next_position(request, position_id):
 
 
 
-def vote_view(request):
-    if request.method == 'POST':
-        form = VoteForm(request.POST)
-        if form.is_valid():
-            # Extracting the contestant directly from the cleaned data
-            contestant_id = form.cleaned_data.get('contestant') or request.POST.get('selected_contestant')
-            position = form.cleaned_data['position']
-
-            reg_number = form.cleaned_data['reg_number']
-            student = Student.objects.filter(reg_number=reg_number).first()
-
-            if student and not Vote.objects.filter(student=student, position=position).exists():
-                Vote.objects.create(
-                    student=student,
-                    position=position,
-                    contestant_id=contestant_id  # Use the contestant ID directly
-                )
-                messages.success(request, 'Vote cast successfully!')
-                return redirect('vote_success')
-            else:
-                messages.error(request, 'Invalid registration number or you have already voted.')
-                return redirect('vote')
-    else:
-        form = VoteForm()
-    return render(request, 'voting/vote.html', {'form': form})
-
-
 
 
 
@@ -423,7 +392,6 @@ def vote_view(request):
 
 @login_required
 @staff_member_required
-@custom_auth_required
 def admin_dashboard(request):
     if not request.user.is_superuser:
         return redirect('login')
@@ -431,11 +399,13 @@ def admin_dashboard(request):
     total_votes = Vote.objects.count()
     total_students = Student.objects.count()
     total_positions = Position.objects.count()
+    total_contestants = Contestant.objects.count()
 
     context = {
         'total_votes': total_votes,
         'total_students': total_students,
         'total_positions': total_positions,
+        'total_contestants': total_contestants,
     }
 
     return render(request, 'voting/admin_dashboard.html', context)
@@ -443,3 +413,10 @@ def admin_dashboard(request):
 
 class CompletedView(TemplateView):
     template_name = 'voting/completed.html'
+
+    def get(self, request, *args, **kwargs):
+        # Clear the voter's session once they're done so a shared/public
+        # device doesn't stay logged in as the last person who voted.
+        if request.user.is_authenticated:
+            auth_logout(request)
+        return super().get(request, *args, **kwargs)

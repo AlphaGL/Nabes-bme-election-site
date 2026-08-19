@@ -29,12 +29,28 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-a(1(wp+^gn^fi64_wz9)qp*9257nxj^s$c-l4@6asjbl^$n)l*'
+# These values can be overridden with environment variables (e.g. on Render's
+# dashboard) without touching code. The hardcoded fallbacks below are the
+# values already in use, kept only so nothing breaks if the env vars aren't
+# set yet — they are exposed in git history and should be rotated and moved
+# to env vars as soon as possible.
+SECRET_KEY = config(
+    'SECRET_KEY',
+    default='django-insecure-a(1(wp+^gn^fi64_wz9)qp*9257nxj^s$c-l4@6asjbl^$n)l*'
+)
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+# Set DEBUG=True in a local .env file for development; defaults to off so a
+# crash never leaks secrets/stack traces to voters on the live site.
+DEBUG = config('DEBUG', default=False, cast=bool)
 
-ALLOWED_HOSTS = ["https://nabes-bme-election.onrender.com", "nabes-bme-election.onrender.com", "www.nabes-bme-election.onrender.com","127.0.0.1"]
+# ".vercel.app" (leading dot) matches any Vercel preview/production subdomain.
+# Override/extend with a comma-separated ALLOWED_HOSTS env var for a custom domain.
+ALLOWED_HOSTS = config(
+    'ALLOWED_HOSTS',
+    default="nabes-bme-election.onrender.com,www.nabes-bme-election.onrender.com,.vercel.app,127.0.0.1,localhost",
+    cast=lambda v: [h.strip() for h in v.split(',') if h.strip()]
+)
 
 
 # Database
@@ -42,7 +58,10 @@ DATABASES = {
     # neon.tech
     ## Email: thewatch2d@gmail.com
     'default': dj_database_url.parse(
-        'postgresql://neondb_owner:npg_FwbGQ8WoVn1r@ep-odd-glitter-ad4ndj5m-pooler.c-2.us-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require'
+        config(
+            'DATABASE_URL',
+            default='postgresql://neondb_owner:npg_FwbGQ8WoVn1r@ep-odd-glitter-ad4ndj5m-pooler.c-2.us-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require'
+        )
     ),
 }
 # Application definition
@@ -97,10 +116,10 @@ TEMPLATES = [
 DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
 
-cloudinary.config( 
-    cloud_name = "dgzjegrcm",  
-    api_key = "275554513554491",  
-    api_secret = "sdA3bKAcsECuooRNa1Fu1lcjdEE"
+cloudinary.config(
+    cloud_name = config('CLOUDINARY_CLOUD_NAME', default="dgzjegrcm"),
+    api_key = config('CLOUDINARY_API_KEY', default="275554513554491"),
+    api_secret = config('CLOUDINARY_API_SECRET', default="sdA3bKAcsECuooRNa1Fu1lcjdEE")
 )
 
 WSGI_APPLICATION = 'voting_system.wsgi.application'
@@ -113,18 +132,13 @@ WSGI_APPLICATION = 'voting_system.wsgi.application'
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
 
+# Kept intentionally minimal: this is a low-stakes department election used by
+# non-technical students, so we only enforce a short minimum length rather
+# than rejecting simple/numeric passwords, which caused confusing failures.
 AUTH_PASSWORD_VALIDATORS = [
     {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
-    },
-    {
         'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+        'OPTIONS': {'min_length': 4},
     },
 ]
 AUTH_USER_MODEL = 'voting.Student'
@@ -146,6 +160,9 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
+# Where `collectstatic` (run by setup.sh) writes output for Vercel's
+# @vercel/static-build step — matches vercel.json's distDir/static route.
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles_build', 'static')
 
 
 MEDIA_URL = '/media/'

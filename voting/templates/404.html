@@ -1,0 +1,18 @@
+{% extends "voting/main.html" %}
+{% block title %}Page Not Found{% endblock %}
+{% block header %}Page Not Found{% endblock %}
+
+{% block body %}
+<div class="center-shell">
+    <div class="container" style="max-width: 460px;">
+        <div class="card card-pad" style="text-align:center;">
+            <i class="bi bi-signpost-split" style="font-size: 2.5rem; color: var(--brand);"></i>
+            <h2 style="margin-top:.75rem;">Page Not Found</h2>
+            <p style="color: var(--ink-soft); margin: .75rem 0 1.5rem;">
+                The page you're looking for doesn't exist or may have moved.
+            </p>
+            <a href="{% url 'login' %}" class="btn btn-primary"><i class="bi bi-house"></i> Back to Login</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

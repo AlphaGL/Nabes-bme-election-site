@@ -1,356 +1,77 @@
 {% extends "voting/main.html" %}
-{% block title %}Vote for Position{% endblock %}
+{% block title %}Vote for {{ position.name }}{% endblock %}
 {% block header %}Vote for {{ position.name }}{% endblock %}
+
 {% block body %}
-
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-
 <style>
-    body {
-        font-family: 'Inter', sans-serif;
-        background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
-        min-height: 100vh;
-    }
-    
-    .main-card {
-        background: white;
-        border-radius: 16px;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-        border: 1px solid #e2e8f0;
-        transition: all 0.3s ease;
-    }
-    
-    .main-card:hover {
-        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-        transform: translateY(-2px);
-    }
-    
-    .header-card {
-        background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
-        color: white;
-        border-radius: 16px;
-        padding: 2rem;
-        margin-bottom: 1.5rem;
-        text-align: center;
-    }
-    
-    .btn-primary {
-        background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
-        color: white;
-        border: none;
-        border-radius: 12px;
-        padding: 12px 24px;
-        font-weight: 600;
-        transition: all 0.3s ease;
-        cursor: pointer;
-    }
-    
-    .btn-primary:hover {
-        transform: translateY(-1px);
-        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
-    }
-    
-    .btn-success {
-        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-        color: white;
-        border: none;
-        border-radius: 12px;
-        padding: 12px 24px;
-        font-weight: 600;
-        transition: all 0.3s ease;
-        cursor: pointer;
-    }
-    
-    .btn-success:hover {
-        transform: translateY(-1px);
-        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
-    }
-    
-    .form-select {
-        border: 2px solid #e2e8f0;
-        border-radius: 12px;
-        padding: 12px 16px;
-        font-size: 16px;
-        transition: all 0.3s ease;
-        background: white;
-    }
-    
-    .form-select:focus {
-        outline: none;
-        border-color: #3b82f6;
-        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-    }
-    
-    .contestant-card {
-        background: #f8fafc;
-        border: 2px solid #e2e8f0;
-        border-radius: 16px;
-        padding: 2rem;
-        text-align: center;
-        margin-top: 1.5rem;
-        transition: all 0.3s ease;
-    }
-    
-    .contestant-image {
-        width: 120px;
-        height: 120px;
-        border-radius: 50%;
-        object-fit: cover;
-        border: 4px solid white;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-        margin: 0 auto 1rem auto;
-    }
-    
-    .submit-section {
-        background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
-        border: 2px solid #a7f3d0;
-        border-radius: 16px;
-        padding: 2rem;
-        text-align: center;
-        margin-top: 1.5rem;
-    }
-    
-    .status-badge {
-        display: inline-flex;
-        align-items: center;
-        background: #dcfce7;
-        color: #166534;
-        padding: 8px 16px;
-        border-radius: 20px;
-        font-size: 14px;
-        font-weight: 500;
-    }
-    
-    .error-alert {
-        background: #fef2f2;
-        border: 2px solid #fca5a5;
-        color: #dc2626;
-        padding: 16px;
-        border-radius: 12px;
-        margin-bottom: 1.5rem;
-    }
-    
-    .icon-circle {
-        width: 48px;
-        height: 48px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin: 0 auto 1rem auto;
-    }
-    
-    .pulse {
-        animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-    }
-    
-    @keyframes pulse {
-        0%, 100% {
-            opacity: 1;
-        }
-        50% {
-            opacity: .5;
-        }
-    }
-    
-    @media (max-width: 640px) {
-        .main-card {
-            margin: 1rem;
-        }
-        
-        .header-card {
-            padding: 1.5rem;
-            margin-bottom: 1rem;
-        }
-        
-        .contestant-card, .submit-section {
-            padding: 1.5rem;
-        }
-    }
+    .candidate-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 1rem; margin: 1.5rem 0 6rem; }
+    .candidate-card { position: relative; border-radius: var(--radius); overflow: hidden; }
+    .candidate-card input { position: absolute; opacity: 0; }
+    .candidate-card label { display: block; cursor: pointer; background: #fff; border: 3px solid var(--line); border-radius: var(--radius); overflow: hidden; transition: border-color .15s ease, transform .1s ease; }
+    .candidate-card label:active { transform: scale(.98); }
+    .candidate-card input:checked + label { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(59,130,246,.15); }
+    .candidate-photo { width: 100%; aspect-ratio: 1 / 1; object-fit: cover; display: block; background: var(--bg-soft); }
+    .candidate-name { padding: .75rem .6rem; text-align: center; font-weight: 600; font-size: .98rem; }
+    .candidate-check { position: absolute; top: .5rem; right: .5rem; width: 28px; height: 28px; border-radius: 50%; background: var(--brand); color: #fff; display: none; align-items: center; justify-content: center; font-size: 1rem; }
+    .candidate-card input:checked + label .candidate-check { display: flex; }
+
+    .confirm-bar { position: sticky; bottom: 0; background: #fff; border-top: 1px solid var(--line); padding: 1rem; margin: 0 -1.25rem -1px; box-shadow: 0 -8px 20px rgba(15,23,42,.06); }
+    .confirm-inner { max-width: 720px; margin: 0 auto; display: flex; align-items: center; gap: 1rem; justify-content: space-between; }
+    .confirm-selected { font-weight: 600; color: var(--ink-soft); font-size: .95rem; }
+    .confirm-selected strong { color: var(--ink); }
 </style>
 
-<div class="min-h-screen py-8 px-4">
-    <div class="max-w-2xl mx-auto">
-        <!-- Header Section -->
-        <div class="header-card">
-            <div class="icon-circle bg-white bg-opacity-20 mb-4">
-                <i class="fas fa-vote-yea text-2xl"></i>
-            </div>
-            <h1 class="text-3xl font-bold mb-2">{{ position.name }}</h1>
-            <p class="text-blue-100 text-lg mb-4">Cast your vote and make your voice heard</p>
-            <div class="status-badge">
-                <div class="w-2 h-2 bg-green-500 rounded-full mr-2 pulse"></div>
-                Voting Active
-            </div>
-        </div>
+<div class="container" style="max-width: 720px; padding-top: 1.5rem;">
+    <div class="alert alert-info"><i class="bi bi-hand-index-thumb"></i><span>Tap a candidate's photo to select them, then confirm your vote below.</span></div>
 
-        <!-- Main Voting Card -->
-        <div class="main-card p-8">
-            <form method="POST" id="voteForm">
-                {% csrf_token %}
-                
-                {% if error_message %}
-                    <div class="error-alert">
-                        <div class="flex items-center">
-                            <i class="fas fa-exclamation-triangle mr-3"></i>
-                            <span class="font-medium">{{ error_message }}</span>
-                        </div>
-                    </div>
-                {% endif %}
-
-                <!-- Step 1: Select Contestant -->
-                <div class="mb-6">
-                    <label for="contestant" class="block text-gray-700 text-lg font-semibold mb-3">
-                        <i class="fas fa-users mr-2 text-blue-500"></i>
-                        Step 1: Choose Your Candidate
+    <form method="POST" id="voteForm">
+        {% csrf_token %}
+        <div class="candidate-grid">
+            {% for contestant in contestants %}
+                <div class="candidate-card">
+                    <input type="radio" name="contestant" id="c{{ contestant.id }}" value="{{ contestant.id }}" required data-name="{{ contestant.name }}">
+                    <label for="c{{ contestant.id }}">
+                        {% if contestant.image %}
+                            <img src="{{ contestant.image.url }}" alt="{{ contestant.name }}" class="candidate-photo">
+                        {% else %}
+                            <div class="candidate-photo" style="display:flex; align-items:center; justify-content:center;">
+                                <i class="bi bi-person-fill" style="font-size: 3rem; color: var(--line);"></i>
+                            </div>
+                        {% endif %}
+                        <div class="candidate-name">{{ contestant.name }}<span class="candidate-check"><i class="bi bi-check-lg"></i></span></div>
                     </label>
-                    <select name="contestant" id="contestant" 
-                            class="form-select w-full" 
-                            required onchange="showContestantDetails()">
-                        <option value="" disabled selected>Select a contestant...</option>
-                        {% for contestant in contestants %}
-                            <option value="{{ contestant.id }}" 
-                                data-image-url="{% if contestant.image %}{{ contestant.image.url }}{% else %}/static/img/default-contestant.jpg{% endif %}"
-                                data-name="{{ contestant.name }}">
-                                {{ contestant.name }}
-                            </option>
-                        {% endfor %}
-                    </select>
                 </div>
-                
-                <!-- Step 2: Confirm Selection -->
-                <div id="contestantDetails" class="hidden">
-                    <div class="contestant-card">
-                        <h3 class="text-gray-700 text-lg font-semibold mb-4">
-                            <i class="fas fa-user-check mr-2 text-green-500"></i>
-                            Step 2: Confirm Your Selection
-                        </h3>
-                        
-                        <img id="contestantImage" 
-                             src="" 
-                             alt="Contestant Image" 
-                             class="contestant-image" />
-                        
-                        <h4 id="contestantName" class="text-xl font-bold text-gray-800 mb-4"></h4>
-                        
-                        <button type="button" 
-                                id="confirmSelection" 
-                                class="btn-success text-lg px-8 py-3" 
-                                onclick="confirmContestantSelection()">
-                            <i class="fas fa-check-circle mr-2"></i>
-                            Confirm This Candidate
-                        </button>
-                    </div>
-                </div>
-
-                <input type="hidden" name="contestant" id="selectedContestantInput" />
-
-                <!-- Step 3: Submit Vote -->
-                <div class="hidden" id="submitVoteDiv">
-                    <div class="submit-section">
-                        <div class="icon-circle bg-green-500 text-white mb-4">
-                            <i class="fas fa-ballot-check text-xl"></i>
-                        </div>
-                        
-                        <h3 class="text-xl font-bold text-gray-800 mb-2">Step 3: Submit Your Vote</h3>
-                        <p class="text-gray-600 mb-6">Your selection has been confirmed. Click below to cast your vote.</p>
-                        
-                        <div class="bg-white p-4 rounded-lg border-2 border-green-200 mb-6">
-                            <p class="text-sm text-gray-600 mb-2">
-                                <i class="fas fa-info-circle mr-2 text-blue-500"></i>
-                                <strong>Important:</strong> Once submitted, your vote cannot be changed.
-                            </p>
-                        </div>
-                        
-                        <button type="submit" 
-                                class="btn-primary text-xl px-12 py-4">
-                            <i class="fas fa-paper-plane mr-3"></i>
-                            Submit My Vote
-                        </button>
-                    </div>
-                </div>
-            </form>
+            {% empty %}
+                <p style="grid-column: 1/-1; text-align:center; color: var(--ink-soft);">No candidates found for this position yet.</p>
+            {% endfor %}
         </div>
 
-        <!-- Security Notice -->
-        <div class="text-center mt-6">
-            <p class="text-gray-500 text-sm">
-                <i class="fas fa-shield-alt mr-2"></i>
-                Your vote is secure, anonymous, and encrypted
-            </p>
+        <div class="confirm-bar">
+            <div class="confirm-inner">
+                <span class="confirm-selected" id="selectedLabel">No candidate selected yet</span>
+                <button type="submit" class="btn btn-primary btn-auto" id="submitBtn" disabled style="min-width: 180px;">
+                    <i class="bi bi-check-circle"></i> Confirm Vote
+                </button>
+            </div>
         </div>
-    </div>
+    </form>
 </div>
 
 <script>
-    function showContestantDetails() {
-        const contestantSelect = document.getElementById('contestant');
-        const selectedOption = contestantSelect.options[contestantSelect.selectedIndex];
-        
-        const contestantImageUrl = selectedOption.getAttribute('data-image-url');
-        const contestantName = selectedOption.getAttribute('data-name');
-        
-        if (contestantImageUrl && contestantName) {
-            document.getElementById('contestantImage').src = contestantImageUrl;
-            document.getElementById('contestantName').textContent = contestantName;
-            
-            // Reset previous states
-            document.getElementById('submitVoteDiv').classList.add('hidden');
-            document.getElementById('selectedContestantInput').value = '';
-            document.getElementById('confirmSelection').disabled = false;
-            document.getElementById('confirmSelection').innerHTML = '<i class="fas fa-check-circle mr-2"></i>Confirm This Candidate';
-            document.getElementById('confirmSelection').className = 'btn-success text-lg px-8 py-3';
-            contestantSelect.disabled = false;
-            
-            // Show contestant details
-            document.getElementById('contestantDetails').classList.remove('hidden');
-            
-            // Smooth scroll to the contestant details
-            document.getElementById('contestantDetails').scrollIntoView({ 
-                behavior: 'smooth', 
-                block: 'nearest' 
-            });
-        }
-    }
-    
-    function confirmContestantSelection() {
-        const contestantSelect = document.getElementById('contestant');
-        const selectedContestantId = contestantSelect.value;
-        
-        if (selectedContestantId) {
-            document.getElementById('selectedContestantInput').value = selectedContestantId;
-            
-            // Update confirm button to show confirmed state
-            const confirmBtn = document.getElementById('confirmSelection');
-            confirmBtn.innerHTML = '<i class="fas fa-check mr-2"></i>Selection Confirmed';
-            confirmBtn.className = 'text-lg px-8 py-3 bg-gray-400 text-white rounded-lg cursor-not-allowed';
-            confirmBtn.disabled = true;
-            
-            // Disable contestant selection
-            contestantSelect.disabled = true;
-            
-            // Show submit section
-            document.getElementById('submitVoteDiv').classList.remove('hidden');
-            
-            // Smooth scroll to submit section
-            setTimeout(() => {
-                document.getElementById('submitVoteDiv').scrollIntoView({ 
-                    behavior: 'smooth', 
-                    block: 'nearest' 
-                });
-            }, 300);
-        }
-    }
-    
-    // Handle form submission feedback
-    document.getElementById('voteForm').addEventListener('submit', function(e) {
-        const submitBtn = this.querySelector('button[type="submit"]');
-        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Submitting Vote...';
+    var radios = document.querySelectorAll('input[name="contestant"]');
+    var selectedLabel = document.getElementById('selectedLabel');
+    var submitBtn = document.getElementById('submitBtn');
+
+    radios.forEach(function (radio) {
+        radio.addEventListener('change', function () {
+            selectedLabel.innerHTML = 'Voting for <strong>' + this.dataset.name + '</strong>';
+            submitBtn.disabled = false;
+        });
+    });
+
+    document.getElementById('voteForm').addEventListener('submit', function () {
         submitBtn.disabled = true;
-        submitBtn.className = 'text-xl px-12 py-4 bg-gray-400 text-white rounded-lg cursor-not-allowed';
+        submitBtn.innerHTML = '<i class="bi bi-arrow-repeat"></i> Submitting...';
     });
 </script>
-
 {% endblock %}
