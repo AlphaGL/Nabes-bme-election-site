@@ -1,16 +1,14 @@
 #!/bin/bash
-# Build/setup script.
+# Local dev setup script. Not used by Vercel — the @vercel/python builder
+# in vercel.json installs requirements.txt itself, and none of the
+# templates currently reference local static files, so no separate
+# static-build step is needed there.
 #
-# On Vercel: run automatically as the @vercel/static-build step in
-# vercel.json — installs dependencies and collects static files into
-# staticfiles_build/static so vercel.json's /static/(.*) route can serve them.
-#
-# Locally: run manually (`bash setup.sh`) to install dependencies and
-# collect static files the same way, before `python manage.py runserver`.
+# Run manually: `bash setup.sh`
 #
 # Does NOT run database migrations — those touch the live shared database
-# and should be run deliberately (`python manage.py migrate`), not on every
-# build/deploy.
+# and should be run deliberately (`python manage.py migrate`), not as part
+# of routine setup.
 
 set -e
 
