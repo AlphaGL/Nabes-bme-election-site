@@ -12,9 +12,8 @@ class Command(BaseCommand):
     help = (
         "Import the official BME class list (xlsx) as the approved voter roster. "
         "Safe to re-run: existing students are only updated (name), never have "
-        "their password touched. New students are created with an unusable "
-        "password so they must self-register (Reg Number + Password) before "
-        "they can log in."
+        "their password touched. New students are created with their password "
+        "set to their own registration number, so they can log in immediately."
     )
 
     def add_arguments(self, parser):
@@ -73,7 +72,7 @@ class Command(BaseCommand):
                 created += 1
                 if not dry_run:
                     student = Student(reg_number=reg_number, full_name=full_name)
-                    student.set_unusable_password()
+                    student.set_password(reg_number)
                     student.save()
             elif student.full_name != full_name:
                 updated += 1

@@ -12,6 +12,11 @@
                 <p style="color: var(--ink-soft); margin: .4rem 0 0;">Enter your registration number and password.</p>
             </div>
 
+            <div class="alert alert-info">
+                <i class="bi bi-info-circle"></i>
+                <span>First time voting? Your password is your <strong>registration number</strong> (same as above). You can change it anytime using "Reset it here" below.</span>
+            </div>
+
             {% if form.non_field_errors %}
                 {% for error in form.non_field_errors %}
                     <div class="alert alert-error"><i class="bi bi-exclamation-triangle-fill"></i><span>{{ error }}</span></div>
@@ -48,8 +53,8 @@
             </form>
 
             <div style="text-align:center; margin-top: 1.5rem; padding-top: 1.25rem; border-top: 1px solid var(--line);">
-                <p style="margin: 0 0 .5rem;">New here? <a href="{% url 'register_student' %}"><strong>Create your voting account</strong></a></p>
-                <p style="margin: 0;">Forgot your password? <a href="{% url 'reset_password' %}"><strong>Reset it here</strong></a></p>
+                <p style="margin: 0 0 .5rem;">Forgot or changed your password? <a href="{% url 'reset_password' %}"><strong>Reset it here</strong></a></p>
+                <p style="margin: 0;">Reg number not recognized? <a href="{% url 'register_student' %}"><strong>Register here</strong></a></p>
             </div>
         </div>
 
