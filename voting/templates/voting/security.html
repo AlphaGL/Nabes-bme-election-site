@@ -21,6 +21,7 @@
 
             <form method="POST" style="text-align:left;">
                 {% csrf_token %}
+                {% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}
                 <div class="form-group">
                     <label class="form-label">Access Code</label>
                     {% for field in form %}

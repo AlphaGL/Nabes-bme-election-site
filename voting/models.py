@@ -121,3 +121,21 @@ class Vote(models.Model):
     @classmethod
     def validate_vote(cls, student, position):
         return cls.objects.filter(student=student, position=position).exists()
+
+
+class ElectionSettings(models.Model):
+    """Single-row switch controlling whether students can currently log in and vote."""
+    is_open = models.BooleanField(default=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Election Setting"
+        verbose_name_plural = "Election Settings"
+
+    def __str__(self):
+        return "Election OPEN" if self.is_open else "Election CLOSED"
+
+    @classmethod
+    def get_solo(cls):
+        obj, _ = cls.objects.get_or_create(pk=1)
+        return obj

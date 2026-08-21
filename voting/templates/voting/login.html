@@ -12,6 +12,7 @@
                 <p style="color: var(--ink-soft); margin: .4rem 0 0;">Enter your registration number and password.</p>
             </div>
 
+            {% if election_open %}
             <div class="alert alert-info">
                 <i class="bi bi-info-circle"></i>
                 <span>First time voting? Your password is your <strong>registration number</strong> (same as above). You can change it anytime using "Reset it here" below.</span>
@@ -56,6 +57,12 @@
                 <p style="margin: 0 0 .5rem;">Forgot or changed your password? <a href="{% url 'reset_password' %}"><strong>Reset it here</strong></a></p>
                 <p style="margin: 0;">Reg number not recognized? <a href="{% url 'register_student' %}"><strong>Register here</strong></a></p>
             </div>
+            {% else %}
+            <div class="alert alert-warning" style="text-align:center;">
+                <i class="bi bi-lock-fill"></i>
+                <span><strong>Voting is currently closed.</strong> The department will announce when voting reopens. Thank you for your interest.</span>
+            </div>
+            {% endif %}
         </div>
 
         <p style="text-align:center; color: var(--ink-soft); font-size: .9rem; margin-top: 1.25rem;">

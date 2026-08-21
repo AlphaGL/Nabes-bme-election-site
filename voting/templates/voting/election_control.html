@@ -1,0 +1,47 @@
+{% extends 'voting/main.html' %}
+{% block title %}Election Control{% endblock %}
+{% block header %}Election Control{% endblock %}
+
+{% block body %}
+<div class="center-shell">
+    <div class="container" style="max-width: 460px;">
+        <div class="card card-pad" style="text-align:center;">
+            <i class="bi bi-toggle2-{% if election.is_open %}on{% else %}off{% endif %}" style="font-size: 2.5rem; color: {% if election.is_open %}var(--success){% else %}var(--danger){% endif %};"></i>
+            <h2 style="margin: .75rem 0 .25rem;">Election is currently</h2>
+            <p style="font-size: 1.5rem; font-weight: 800; margin: 0 0 1.5rem; color: {% if election.is_open %}var(--success){% else %}var(--danger){% endif %};">
+                {% if election.is_open %}OPEN{% else %}CLOSED{% endif %}
+            </p>
+
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{% if message.tags == 'error' %}error{% else %}success{% endif %}">
+                        <i class="bi bi-{% if message.tags == 'error' %}exclamation-triangle-fill{% else %}check-circle-fill{% endif %}"></i>
+                        <span>{{ message }}</span>
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            <p style="color: var(--ink-soft); margin-bottom: 1.5rem;">
+                {% if election.is_open %}
+                    Students can currently log in and vote. Closing the election will immediately stop new logins and votes — anyone mid-session will see a "voting closed" message.
+                {% else %}
+                    Students currently cannot log in or vote. Opening the election will immediately allow logins and voting again.
+                {% endif %}
+            </p>
+
+            <form method="POST" onsubmit="return confirm('{% if election.is_open %}Close the election now? Students will immediately be unable to log in or vote.{% else %}Open the election now? Students will immediately be able to log in and vote.{% endif %}');">
+                {% csrf_token %}
+                {% if election.is_open %}
+                    <button type="submit" class="btn btn-danger"><i class="bi bi-lock-fill"></i> Close Election</button>
+                {% else %}
+                    <button type="submit" class="btn btn-success"><i class="bi bi-unlock-fill"></i> Open Election</button>
+                {% endif %}
+            </form>
+
+            <div style="text-align:center; margin-top: 1.5rem; padding-top: 1.25rem; border-top: 1px solid var(--line);">
+                <a href="{% url 'admin_dashboard' %}"><i class="bi bi-arrow-left"></i> Back to Admin Dashboard</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

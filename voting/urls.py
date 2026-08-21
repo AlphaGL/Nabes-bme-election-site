@@ -21,4 +21,5 @@ urlpatterns = [
     path('manage_positions', views.manage_positions, name='manage_positions'),
     path('encrypted/site_map/ibeawuchicn/', views.site_map, name='site_map'),
     path('reset_password/', reset_password, name='reset_password'),
+    path('election-control/', views.election_control, name='election_control'),
 ]

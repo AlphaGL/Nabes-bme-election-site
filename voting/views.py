@@ -3,7 +3,7 @@ from django.db.models import Count
 from django.db import IntegrityError
 from django.contrib import messages
 from django.contrib.auth import login as auth_login, logout as auth_logout, authenticate
-from django.urls import reverse_lazy
+from django.urls import reverse_lazy, reverse
 from django.contrib.auth.views import LoginView
 from django.views.generic import TemplateView
 from django.contrib.admin.views.decorators import staff_member_required
@@ -12,7 +12,7 @@ from django.contrib.auth.decorators import login_required
 from decouple import config
 from django.http import HttpResponseBadRequest
 
-from .models import Position, Contestant, Vote, Student
+from .models import Position, Contestant, Vote, Student, ElectionSettings
 from .forms import RegisterForm
 from django.contrib.auth.forms import AuthenticationForm  # Import AuthenticationForm
 from .forms import  AccessCodeForm
@@ -125,18 +125,37 @@ def list_contestants(request):
 
 
 def enter_access_code(request):
+    next_url = request.POST.get('next') or request.GET.get('next') or 'list_students'
     if request.method == 'POST':
         form = AccessCodeForm(request.POST)
         if form.is_valid():
             access_code = form.cleaned_data.get('access_code')
             if access_code == ACCESS_CODE:
                 request.session['has_access'] = True  # Set session variable
-                return redirect('list_students')  # Redirect to the list_students view
+                return redirect(next_url)
             else:
                 messages.error(request, 'Invalid access code.')
     else:
         form = AccessCodeForm()
-    return render(request, 'voting/security.html', {'form': form})
+    return render(request, 'voting/security.html', {'form': form, 'next': next_url})
+
+
+def election_control(request):
+    if not request.session.get('has_access'):
+        return redirect(f"{reverse('enter_access_code')}?next=election_control")
+
+    election = ElectionSettings.get_solo()
+
+    if request.method == 'POST':
+        election.is_open = not election.is_open
+        election.save()
+        messages.success(
+            request,
+            f"Voting is now {'OPEN — students can log in and vote.' if election.is_open else 'CLOSED — students can no longer log in or vote.'}"
+        )
+        return redirect('election_control')
+
+    return render(request, 'voting/election_control.html', {'election': election})
 
 
 
@@ -273,7 +292,16 @@ class BmeLoginView(LoginView):
     template_name = 'voting/login.html'
     form_class = AuthenticationForm  # Use AuthenticationForm
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['election_open'] = ElectionSettings.get_solo().is_open
+        return context
+
     def form_valid(self, form):
+        if not ElectionSettings.get_solo().is_open:
+            form.add_error(None, 'Voting is currently closed. Please check back later.')
+            return self.form_invalid(form)
+
         reg_number = form.cleaned_data.get('username')
         password = form.cleaned_data.get('password')
         student = authenticate(reg_number=reg_number, password=password)
@@ -323,6 +351,11 @@ def vote_position(request, position_id):
 
     if not reg_number:
         return redirect('login')
+
+    if not ElectionSettings.get_solo().is_open:
+        return render(request, 'voting/error.html', {
+            'message': 'Voting has been closed by the department. Thank you for your interest.'
+        })
 
     student = get_object_or_404(Student, reg_number=reg_number)
     position = get_object_or_404(Position, id=position_id)
