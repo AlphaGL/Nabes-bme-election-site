@@ -270,7 +270,7 @@ def register_student(request):
 
 
 class BmeLoginView(LoginView):
-    template_name = 'voting/login.html'
+    template_name = 'voting/login_closed.html'
     form_class = AuthenticationForm  # Use AuthenticationForm
 
     def form_valid(self, form):
